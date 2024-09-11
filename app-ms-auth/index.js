@@ -26,6 +26,28 @@ let users = [
     }
 ];
 
+// Route d'inscription
+app.post('/register', (req, res) => {
+    const { username, password } = req.query;
+
+    // Vérification si l'utilisateur existe déjà
+    const existingUser = users.find(user => user.username === username);
+    if (existingUser) {
+        return res.status(400).json({ message: 'Utilisateur déjà existant' });
+    }
+
+    // Cryptage du mot de passe et création de l'utilisateur
+    const hashedPassword = bcrypt.hashSync(password, 8);
+    const newUser = {
+        id: users.length + 1,
+        username,
+        password: hashedPassword
+    };
+
+    users.push(newUser);
+    res.json({ message: 'Utilisateur enregistré avec succès' });
+});
+
 // Route publique
 app.get('/', (req, res) => {
     res.json({ message: 'Bienvenue sur l\'API d\'authentification' });
