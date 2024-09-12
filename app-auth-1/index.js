@@ -34,12 +34,32 @@ app.post('/register', (req, res) => {
         return res.render('register', { error: 'Utilisateur déjà existant' });
     }
 
-
-    console.log(password);
     // Hacher le mot de passe et ajouter l'utilisateur
     const hashedPassword = bcrypt.hashSync(password, 8);
     users.push({ username, password: hashedPassword });
     res.redirect('/login');
+});
+
+// Route de connexion
+app.get('/login', (req, res) => {
+    res.render('login', { error: null });
+});
+
+app.post('/login', (req, res) => {
+    const {username, password} = req.body;
+
+    // Vérifier si l'utilisateur existe
+    const user = users.find(user => user.username === username);
+    if (!user) {
+        return res.render('login', { error: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier le mot de passe
+    if (!bcrypt.compareSync(password, user.password)) {
+        return res.render('login', { error: 'Mot de passe incorrect' });
+    }
+
+    res.redirect('/account');
 });
 
 app.listen(port, () => {
