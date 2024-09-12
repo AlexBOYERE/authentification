@@ -15,6 +15,14 @@ app.use(express.static('public'));
 // Définir notre moteur de rendu
 app.set('view engine', 'ejs');
 
+// Configurer les sessions (cookie)
+app.use(session({
+    secret: 'secret-key',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 60000 } // 1 heure - 1200000 2 heures
+}));
+
 // Route de la page d'accueil
 app.get('/', (req, res) => {
     res.render('index', { message: 'Bienvenue sur notre site' });
@@ -48,8 +56,13 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
 
+    console.log('récupération' + username + password);
+
     // Vérifier si l'utilisateur existe
     const user = users.find(user => user.username === username);
+
+    console.log('vérification');
+
     if (!user) {
         return res.render('login', { error: 'Utilisateur non trouvé' });
     }
@@ -59,7 +72,30 @@ app.post('/login', (req, res) => {
         return res.render('login', { error: 'Mot de passe incorrect' });
     }
 
+    console.log('ok');
+    // Stocker l'utilisateur dans la session*
+
+    console.log(user);
+    console.log(username);
+
     res.redirect('/account');
+});
+
+// function pour analyser la connexion de l'utilisateur - route /account
+function isAuthenticated(req, res, next) {
+    console.log('test');
+
+    console.log(req.session);
+
+    if (req.session.user) {
+        return next();
+    }
+    res.redirect('/login');
+}
+
+// Route protégée sous login (account)
+app.get('/account', isAuthenticated, (req, res) => {
+    res.render('account', { username: req.session.user.username });
 });
 
 app.listen(port, () => {
