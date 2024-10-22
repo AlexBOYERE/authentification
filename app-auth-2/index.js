@@ -3,26 +3,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
-const mongoose = require('mongoose');
+const axios = require('axios'); // Importer le module axios pour effectuer des requêtes HTTP (MS auth)
 
 const app = express();
-const port = 3001;
-
-// Connexion à MongoDB avec Mongoose
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => console.log('MongoDB connecté'))
-    .catch(err => console.log('Erreur de connexion MongoDB :', err));
-
-// Définir le modèle d'utilisateur pour la collection "auth-1"
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
-});
-
-const User = mongoose.model('User', userSchema, 'auth-1'); // Utilisation de la collection "auth-1"
+const port = 3002;
+const adresseAuth = 'http://localhost:3000/';
 
 // Middleware pour traiter les requêtes
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -52,22 +37,18 @@ app.get('/register', (req, res) => {
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
 
-    // Vérifier si l'utilisateur existe déjà dans la collection MongoDB
     try {
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.render('register', { error: 'Utilisateur déjà existant' });
+        // Appel au microservice d'authentification pour l'inscription - Remplacer le localhost:3000 par l'URL du ms auth
+        const response = await axios.post(adresseAuth + `register`, null, {
+            params: { username, password }
+        });
+
+        if (response.status === 200) {
+            res.redirect('/login');
         }
-
-        // Hacher le mot de passe et créer un nouvel utilisateur dans la collection "auth-1"
-        const hashedPassword = bcrypt.hashSync(password, 8);
-        const newUser = new User({ username, password: hashedPassword });
-
-        await newUser.save(); // Enregistrer l'utilisateur dans la base de données
-        res.redirect('/login');
     } catch (err) {
-        console.log(err);
-        res.render('register', { error: 'Erreur lors de l\'inscription' });
+        const errorMessage = err.response && err.response.data ? err.response.data.message : 'Erreur lors de l\'inscription';
+        res.render('register', { error: errorMessage });
     }
 });
 
@@ -79,31 +60,31 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    // Vérifier si l'utilisateur existe dans MongoDB
     try {
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.render('login', { error: 'Utilisateur non trouvé' });
-        }
+        // Appel au microservice d'authentification pour la connexion - Remplacer le localhost:3000 par l'URL du ms auth
+        const response = await axios.post(adresseAuth + `login`, null, {
+            params: { username, password }
+        });
 
-        // Vérifier le mot de passe
-        const isPasswordValid = bcrypt.compareSync(password, user.password);
-        if (!isPasswordValid) {
-            return res.render('login', { error: 'Mot de passe incorrect' });
-        }
+        if (response.status === 200) {
+            // Récupérer le token JWT depuis le microservice
+            const { token } = response.data;
 
-        // Enregistrer l'utilisateur dans la session
-        req.session.user = user;
-        res.redirect('/account');
+            // Stocker le token dans la session utilisateur
+            req.session.token = token;
+            req.session.user = { username }; // Ajouter le nom d'utilisateur à la session
+
+            res.redirect('/account');
+        }
     } catch (err) {
-        console.log(err);
-        res.render('login', { error: 'Erreur lors de la connexion' });
+        const errorMessage = err.response && err.response.data ? err.response.data.message : 'Erreur lors de la connexion';
+        res.render('login', { error: errorMessage });
     }
 });
 
 // Middleware pour protéger la route /account
 function isAuthenticated(req, res, next) {
-    if (req.session.user) {
+    if (req.session.token) {
         return next();
     }
     res.redirect('/login');
