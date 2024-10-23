@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = 3000;
+const port = 4000;
 
 // Middleware pour analyser le JSON
 app.use(bodyParser.json());
@@ -57,11 +57,16 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.query;
 
+    console.log('username:', username);
+    console.log('password:', password);
+
     // Vérification si l'utilisateur existe
     const user = await User.findOne({ username });
     if (!user) {
         return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
+
+    console.log('user:', user);
 
     // Vérification du mot de passe
     const isPasswordValid = bcrypt.compareSync(password, user.password);
@@ -69,8 +74,15 @@ app.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Mot de passe incorrect' });
     }
 
+    console.log('isPasswordValid:', isPasswordValid);
+    console.log('JWT_SECRET:', JWT_SECRET);
+    console.log('user:', user._id);
+
     // Génération du JWT
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: 86400 }); // Expire en 24h
+
+    console.log('token:', token);
+
     res.json({ message: 'Authentification réussie', token });
 });
 

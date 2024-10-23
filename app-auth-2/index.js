@@ -1,13 +1,16 @@
 require('dotenv').config(); // Charger les variables d'environnement depuis le fichier .env
 const express = require('express');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const axios = require('axios'); // Importer le module axios pour effectuer des requêtes HTTP (MS auth)
 
 const app = express();
+app.use(express.static('public'));
+
 const port = 3002;
-const adresseAuth = 'http://localhost:3000/';
+const portAuth = process.env.PORT_AUTH || 4000;
+const adresseAuth = `http://app-ms-auth:` + portAuth + `/`;
+
 
 // Middleware pour traiter les requêtes
 app.use(bodyParser.urlencoded({ extended: true }));
