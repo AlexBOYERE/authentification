@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: move to project directory
+      - name: Move to project directory
         run: cd app-ms-auth
 
       - name: Install dependencies
@@ -31,8 +31,7 @@ jobs:
         run: npm test
 
       - name: Upload Jest test results
-        if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: jest-test-results
           path: jest-test-results.xml
