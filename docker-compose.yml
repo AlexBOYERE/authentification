@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  app-auth-1:
+    build:
+      context: ./app-auth-1
+    container_name: app-auth-1
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/db-auth1
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  app-auth-2:
+    build:
+      context: ./app-auth-2
+    container_name: app-auth-2
+    ports:
+      - "3002:3002"
+    environment:
+      - MS_AUTH_URL=http://app-ms-auth:4000
+    depends_on:
+      - app-ms-auth
+    networks:
+      - app-network
+
+  app-ms-auth:
+    build:
+      context: ./app-ms-auth
+    container_name: app-ms-auth
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/db-auth
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

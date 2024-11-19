@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="screen">
+    <h1>Connexion</h1>
+    <% if (error) { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
+
+    <form action="/login" method="POST">
+        <div class="box">
+            <label for="username">Pseudo</label>
+            <div>
+                <ion-icon name="mail-outline"></ion-icon>
+                <input type="text" name="username" placeholder="············"/></div>
+        </div>
+        <div class="box">
+            <label for="password">Password</label>
+            <div>
+                <ion-icon name="lock-closed-outline"></ion-icon>
+                <input class="pas" type="password" name="password" placeholder="············"/>
+                <ion-icon class="show-hide" name="eye-outline"></ion-icon>
+            </div>
+        </div>
+        <button type="submit" class="login">Se connecter</button>
+        <div class="footer">
+            <a href="/register">Pas encore inscrit ?</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = 3000;
+const port = 4000;
 
 // Middleware pour analyser le JSON
 app.use(bodyParser.json());
@@ -71,6 +71,7 @@ app.post('/login', async (req, res) => {
 
     // Génération du JWT
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: 86400 }); // Expire en 24h
+
     res.json({ message: 'Authentification réussie', token });
 });
 
