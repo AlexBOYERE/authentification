@@ -1,0 +1,38 @@
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: move to project directory
+        run: cd app-ms-auth
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Upload Jest test results
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: jest-test-results
+          path: jest-test-results.xml
