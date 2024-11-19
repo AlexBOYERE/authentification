@@ -10,4 +10,5 @@ module.exports = {
     rules: {
         'no-unused-vars': ['warn', { args: 'none' }],
     },
+    ignores: ['node_modules'],
 };
