@@ -29,6 +29,5 @@ jobs:
         if: contains(github.event.head_commit.message, matrix.project) || always()
         working-directory: ${{ matrix.project }}
         run: |
-          cd ${{ matrix.project }}
           npm install
           npm run lint
