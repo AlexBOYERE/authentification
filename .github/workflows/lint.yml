@@ -1,0 +1,34 @@
+name: Lint Projects
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project: [app-ms-auth]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Run ESLint
+        if: contains(github.event.head_commit.message, matrix.project) || always()
+        working-directory: ${{ matrix.project }}
+        run: |
+          cd ${{ matrix.project }}
+          npm install
+          npm run lint
