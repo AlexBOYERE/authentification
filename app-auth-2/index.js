@@ -11,7 +11,6 @@ const port = 3002;
 const portAuth = process.env.PORT_AUTH || 4000;
 const adresseAuth = `http://app-ms-auth:` + portAuth + `/`;
 
-
 // Middleware pour traiter les requêtes
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
